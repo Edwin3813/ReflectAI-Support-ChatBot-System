@@ -2,6 +2,7 @@ import os
 import glob
 import math
 import re
+import time
 from typing import List, Tuple, Dict
 
 import chromadb
@@ -23,6 +24,12 @@ MAX_CHARS_PER_FILE = 2_000_000
 CHUNK_SIZE = 900
 OVERLAP = 150
 EMBED_DIM = 256
+
+CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
+CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
+CHROMA_ALLOW_RESET = os.getenv("CHROMA_ALLOW_RESET", "false").lower() == "true"
+CHROMA_CONNECT_RETRIES = int(os.getenv("CHROMA_CONNECT_RETRIES", "30"))
+CHROMA_CONNECT_DELAY_SECONDS = float(os.getenv("CHROMA_CONNECT_DELAY_SECONDS", "2"))
 
 HEADER_KEYS = {
     "SOURCE_ID",
@@ -111,28 +118,90 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
         if len(chunk) >= 120:
             chunks.append(chunk)
 
+        if end == n:
+            break
+
         i = end - overlap
         if i < 0:
             i = 0
 
-        if end == n:
-            break
-
     return chunks
 
 
-def main():
-    client = chromadb.HttpClient(
-        host="localhost",
-        port=8000,
-        settings=Settings(allow_reset=True),
+def connect_with_retry():
+    last_error = None
+
+    for attempt in range(1, CHROMA_CONNECT_RETRIES + 1):
+        try:
+            client = chromadb.HttpClient(
+                host=CHROMA_HOST,
+                port=CHROMA_PORT,
+                settings=Settings(allow_reset=CHROMA_ALLOW_RESET),
+            )
+            client.heartbeat()
+            print(f"Connected to Chroma at {CHROMA_HOST}:{CHROMA_PORT}")
+            return client
+        except Exception as e:
+            last_error = e
+            print(
+                f"Waiting for Chroma ({attempt}/{CHROMA_CONNECT_RETRIES}) "
+                f"at {CHROMA_HOST}:{CHROMA_PORT} ... {e}"
+            )
+            if attempt < CHROMA_CONNECT_RETRIES:
+                time.sleep(CHROMA_CONNECT_DELAY_SECONDS)
+
+    raise RuntimeError(
+        f"Could not connect to Chroma at {CHROMA_HOST}:{CHROMA_PORT}: {last_error}"
     )
 
-    for name in [SUPPORT_COLLECTION, CRISIS_COLLECTION]:
-        try:
-            client.delete_collection(name)
-        except Exception:
-            pass
+
+def should_reset_collections() -> bool:
+    return os.getenv("RESET_COLLECTIONS_ON_INGEST", "false").lower() == "true"
+
+
+def add_chunks_idempotently(target_collection, ids, chunks, metadatas, embeddings) -> int:
+    existing_ids = set()
+
+    try:
+        existing = target_collection.get(ids=ids)
+        existing_ids = set(existing.get("ids", [])) if existing else set()
+    except Exception:
+        existing_ids = set()
+
+    ids_to_add = []
+    docs_to_add = []
+    metas_to_add = []
+    embeds_to_add = []
+
+    for idx, chunk_id in enumerate(ids):
+        if chunk_id in existing_ids:
+            continue
+        ids_to_add.append(chunk_id)
+        docs_to_add.append(chunks[idx])
+        metas_to_add.append(metadatas[idx])
+        embeds_to_add.append(embeddings[idx])
+
+    if ids_to_add:
+        target_collection.add(
+            ids=ids_to_add,
+            documents=docs_to_add,
+            metadatas=metas_to_add,
+            embeddings=embeds_to_add,
+        )
+
+    return len(ids_to_add)
+
+
+def main():
+    client = connect_with_retry()
+
+    if should_reset_collections():
+        for name in [SUPPORT_COLLECTION, CRISIS_COLLECTION]:
+            try:
+                client.delete_collection(name)
+                print(f"Deleted collection: {name}")
+            except Exception:
+                pass
 
     support_collection = client.get_or_create_collection(name=SUPPORT_COLLECTION)
     crisis_collection = client.get_or_create_collection(name=CRISIS_COLLECTION)
@@ -146,7 +215,7 @@ def main():
     total_support_chunks = 0
     total_crisis_chunks = 0
 
-    for fp in txt_files:
+    for fp in sorted(txt_files):
         filename = os.path.basename(fp)
         size_bytes = os.path.getsize(fp)
 
@@ -175,10 +244,7 @@ def main():
 
         chunks = chunk_text(body, CHUNK_SIZE, OVERLAP)
 
-        source_id = meta.get(
-            "source_id",
-            os.path.splitext(filename)[0]
-        )
+        source_id = meta.get("source_id", os.path.splitext(filename)[0])
 
         ids = []
         metadatas = []
@@ -202,19 +268,23 @@ def main():
             )
             embeddings.append(embed_text(chunk))
 
-        target_collection.add(
-            ids=ids,
-            documents=chunks,
-            metadatas=metadatas,
-            embeddings=embeddings,
+        added_count = add_chunks_idempotently(
+            target_collection,
+            ids,
+            chunks,
+            metadatas,
+            embeddings,
         )
 
         if collection_name == "crisis":
-            total_crisis_chunks += len(chunks)
+            total_crisis_chunks += added_count
         else:
-            total_support_chunks += len(chunks)
+            total_support_chunks += added_count
 
-        print(f"Ingested {len(chunks)} chunks into {collection_name}: {filename}")
+        print(
+            f"Ingested {added_count} new chunks into {collection_name}: {filename} "
+            f"(total chunks in file: {len(chunks)})"
+        )
 
     print()
     print("Ingestion complete")
