@@ -1,0 +1,23 @@
+{
+  "name": "reflectai-support-chatbot-system",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "concurrently -n CHROMA,RAG,NODE,CLIENT -c auto \"npm run chroma\" \"npm run rag\" \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "rag": "cd server && python -m uvicorn rag_service.app:app --host 127.0.0.1 --port 8001",
+    "chroma": "cd server && powershell -NoProfile -ExecutionPolicy Bypass -Command \"& \\\"$env:APPDATA\\Python\\Python312\\Scripts\\chroma.exe\\\" run --host 127.0.0.1 --port 8000\"",
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

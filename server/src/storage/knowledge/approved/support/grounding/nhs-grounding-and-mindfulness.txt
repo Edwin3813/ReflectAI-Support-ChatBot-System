@@ -1,0 +1,24 @@
+SOURCE_ID: nhs-grounding-and-mindfulness
+SOURCE: NHS
+TITLE: Mindfulness and grounding-style techniques
+URL: https://www.nhs.uk/mental-health/self-help/tips-and-support/mindfulness/
+COLLECTION: support
+CATEGORY: grounding
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Grounding-style support focuses on bringing attention back to the present moment when thoughts feel overwhelming, distressing, or hard to slow down.
+
+A practical way to do this is to gently notice what is happening right now, such as breathing, sounds, physical sensations, or details in the immediate environment.
+
+Supportive grounding and mindfulness ideas may include:
+- paying attention to the sensation of breathing
+- noticing sounds, body sensations, or nearby objects
+- bringing attention back whenever the mind wanders
+- using a simple sensory exercise to reconnect with the present
+- keeping the approach gentle rather than forcing calm
+
+A grounding exercise can be helpful when someone feels overwhelmed and needs a simple, immediate step. One example often used in NHS settings is a sensory check-in, such as noticing things you can see, hear, or feel around you.
+
+Grounding support content should avoid sounding clinical or prescriptive. It should offer calm, practical steps and make clear that different techniques work for different people.

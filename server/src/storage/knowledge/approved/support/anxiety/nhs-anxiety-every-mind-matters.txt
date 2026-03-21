@@ -1,0 +1,26 @@
+SOURCE_ID: nhs-anxiety-every-mind-matters
+SOURCE: NHS
+TITLE: Anxiety - Every Mind Matters
+URL: https://www.nhs.uk/every-mind-matters/mental-health-issues/anxiety/
+COLLECTION: support
+CATEGORY: anxiety
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Anxiety is something many people experience at times, especially during stressful or uncertain periods. It can affect how a person feels, thinks, and behaves.
+
+Common signs of anxiety can include feeling worried, tense, restless, unable to relax, or overwhelmed. Some people may also notice physical effects such as difficulty sleeping, trouble concentrating, or feeling on edge.
+
+Possible reasons anxiety may become stronger include life challenges, stressful environments, difficult experiences, and individual differences in temperament or background.
+
+Supportive self-help approaches may include:
+- bringing attention back to the present moment
+- trying relaxation or breathing exercises
+- building calming routines into daily life
+- noticing what situations increase worry
+- using practical wellbeing plans or coping strategies
+
+Anxiety support information should stay grounded in practical self-help, signposting, and calm reassurance. This content does not diagnose conditions or replace professional medical advice.
+
+If anxiety is becoming hard to manage, it may help to seek support from a qualified professional or trusted health service.

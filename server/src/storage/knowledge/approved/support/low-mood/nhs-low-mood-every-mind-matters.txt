@@ -1,0 +1,24 @@
+SOURCE_ID: nhs-low-mood-every-mind-matters
+SOURCE: NHS
+TITLE: Low mood and depression - Every Mind Matters
+URL: https://www.nhs.uk/every-mind-matters/mental-health-issues/low-mood/
+COLLECTION: support
+CATEGORY: low-mood
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Everyone can feel low from time to time. Feeling low does not always mean something is seriously wrong, but it can still feel difficult and draining.
+
+Low mood may involve feeling sad, tired, frustrated, worried, low in confidence, or less interested in things than usual. Sometimes it follows a difficult event, and sometimes it happens without a clear reason.
+
+Small, supportive changes can sometimes help lift mood, such as:
+- getting some rest and structure into the day
+- doing one manageable activity rather than trying to fix everything at once
+- staying connected with someone trusted
+- being physically active where possible
+- noticing what tends to help, even in small ways
+
+Low-mood support content should stay practical, calm, and realistic. It should not diagnose depression or replace professional care.
+
+If low mood lasts for a long time, keeps getting worse, or makes everyday life much harder, it may help to seek support from a qualified professional or trusted health service.

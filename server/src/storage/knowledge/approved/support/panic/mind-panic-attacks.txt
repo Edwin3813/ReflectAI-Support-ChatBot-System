@@ -1,0 +1,25 @@
+SOURCE_ID: mind-panic-attacks
+SOURCE: Mind
+TITLE: Panic attacks
+URL: https://www.mind.org.uk/information-support/types-of-mental-health-problems/panic-attacks/
+COLLECTION: support
+CATEGORY: panic
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Panic attacks can feel frightening and intense. People may experience a sudden rush of fear, distress, or physical discomfort.
+
+Support information about panic attacks should focus on calm coping steps and reassurance rather than diagnosis. Helpful ideas can include:
+- moving attention to slow, steady breathing
+- staying where possible until the intense feeling begins to pass
+- reminding yourself that panic can feel overwhelming but will pass
+- resting quietly afterwards if needed
+- eating or drinking something if that helps you recover
+- telling someone you trust if you feel able to
+
+If panic attacks happen often, it may help to keep coping steps written down somewhere easy to find. It can also help to think about what kind of self-care is useful after an episode.
+
+People close to someone experiencing panic may be able to help by staying calm, speaking gently, and giving reassurance without adding pressure.
+
+This content is for supportive information only. It should not be used to diagnose a mental health condition or replace professional care.

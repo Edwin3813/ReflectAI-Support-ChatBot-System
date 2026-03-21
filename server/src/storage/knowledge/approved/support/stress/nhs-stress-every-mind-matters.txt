@@ -1,0 +1,26 @@
+SOURCE_ID: nhs-stress-every-mind-matters
+SOURCE: NHS
+TITLE: Stress - Every Mind Matters
+URL: https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/
+COLLECTION: support
+CATEGORY: stress
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Stress is something everyone experiences at times, especially during pressure, uncertainty, change, or difficult life events.
+
+A small amount of stress can sometimes help with focus or motivation, but too much stress can affect mental wellbeing and make it harder to cope day to day.
+
+Common signs of stress may include feeling overwhelmed, irritable, tense, worried, unable to switch off, or mentally drained. Some people may also notice physical strain, tiredness, or trouble sleeping.
+
+Supportive self-help approaches for stress may include:
+- noticing what situations or patterns make stress worse
+- taking short pauses during the day to reset attention
+- using slow breathing or calming exercises
+- making practical plans for manageable next steps
+- building routines that support rest, movement, and recovery
+
+Stress support content should stay practical, calm, and non-judgmental. It should not diagnose a condition or replace professional advice.
+
+If stress is becoming difficult to manage or is affecting daily life significantly, it may help to seek support from a qualified professional or trusted health service.

@@ -1,0 +1,45 @@
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    environment:
+      - ALLOW_RESET=false
+    volumes:
+      - chroma_data:/data
+    restart: unless-stopped
+
+  rag:
+    build:
+      context: ./server
+      dockerfile: rag_service/Dockerfile
+    container_name: reflectai-rag
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - chromadb
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: reflectai-server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    environment:
+      - PORT=5000
+      - RAG_SERVICE_URL=http://rag:8001
+    volumes:
+      - server_db_data:/app/src/storage/db
+      - server_user_data:/app/src/storage/users
+    depends_on:
+      - rag
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  server_db_data:
+  server_user_data:

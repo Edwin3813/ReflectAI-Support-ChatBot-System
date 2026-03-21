@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "approved_domains": [
+    "nhs.uk",
+    "mind.org.uk",
+    "samaritans.org",
+    "who.int"
+  ],
+  "collections": {
+    "support": {
+      "description": "General support, self-help, psychoeducation, coping information",
+      "allow_clinical_diagnosis_content": false
+    },
+    "crisis": {
+      "description": "Urgent help, immediate support, crisis and helpline content",
+      "allow_clinical_diagnosis_content": false
+    }
+  },
+  "sources": [
+    {
+      "source_id": "nhs-anxiety-every-mind-matters",
+      "domain": "nhs.uk",
+      "collection": "support",
+      "category": "anxiety",
+      "region": "UK",
+      "title": "Anxiety - Every Mind Matters",
+      "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/anxiety/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "nhs-anxiety-fear-panic",
+      "domain": "nhs.uk",
+      "collection": "support",
+      "category": "panic",
+      "region": "UK",
+      "title": "Anxiety, fear and panic",
+      "url": "https://www.nhs.uk/mental-health/feelings-symptoms-behaviours/feelings-and-symptoms/anxiety-fear-panic/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "nhs-every-mind-matters",
+      "domain": "nhs.uk",
+      "collection": "support",
+      "category": "mental-wellbeing",
+      "region": "UK",
+      "title": "Every Mind Matters",
+      "url": "https://www.nhs.uk/every-mind-matters/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "mind-understanding-anxiety",
+      "domain": "mind.org.uk",
+      "collection": "support",
+      "category": "anxiety",
+      "region": "UK",
+      "title": "Understanding anxiety",
+      "url": "https://www.mind.org.uk/information-support/types-of-mental-health-problems/anxiety-problems/understanding-anxiety/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "mind-anxiety-symptoms",
+      "domain": "mind.org.uk",
+      "collection": "support",
+      "category": "anxiety",
+      "region": "UK",
+      "title": "Symptoms of anxiety",
+      "url": "https://www.mind.org.uk/information-support/types-of-mental-health-problems/anxiety-problems/symptoms-of-anxiety/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "mind-panic-attacks",
+      "domain": "mind.org.uk",
+      "collection": "support",
+      "category": "panic",
+      "region": "UK",
+      "title": "Panic attacks",
+      "url": "https://www.mind.org.uk/information-support/types-of-mental-health-problems/panic-attacks/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "mind-sleep-and-mental-health",
+      "domain": "mind.org.uk",
+      "collection": "support",
+      "category": "sleep",
+      "region": "UK",
+      "title": "Sleep and mental health",
+      "url": "https://www.mind.org.uk/information-support/types-of-mental-health-problems/sleep-problems/sleep-and-mental-health/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "samaritans-contact",
+      "domain": "samaritans.org",
+      "collection": "crisis",
+      "category": "urgent-help",
+      "region": "UK",
+      "title": "Contact a Samaritan",
+      "url": "https://www.samaritans.org/how-we-can-help/contact-samaritan/",
+      "trust_level": "high",
+      "status": "approved"
+    },
+    {
+      "source_id": "who-mental-health-overview",
+      "domain": "who.int",
+      "collection": "support",
+      "category": "mental-health-overview",
+      "region": "Global",
+      "title": "Mental health",
+      "url": "https://www.who.int/health-topics/mental-health",
+      "trust_level": "medium",
+      "status": "approved"
+    },
+    {
+      "source_id": "who-anxiety-disorders",
+      "domain": "who.int",
+      "collection": "support",
+      "category": "anxiety",
+      "region": "Global",
+      "title": "Anxiety disorders",
+      "url": "https://www.who.int/news-room/fact-sheets/detail/anxiety-disorders",
+      "trust_level": "medium",
+      "status": "approved"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "rules": {
+    "approved_only": true,
+    "max_chars_per_file": 2000000,
+    "chunk_size": 900,
+    "chunk_overlap": 150,
+    "min_chunk_chars": 120,
+    "keep_headings_with_chunks": true,
+    "reject_unknown_domains": true,
+    "reject_unapproved_sources": true,
+    "require_metadata": true
+  },
+  "metadata_required": [
+    "source_id",
+    "source",
+    "title",
+    "url",
+    "collection",
+    "category",
+    "region",
+    "trust_level",
+    "reviewed_at",
+    "chunk"
+  ]
+}

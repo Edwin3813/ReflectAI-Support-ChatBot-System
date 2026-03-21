@@ -1,0 +1,22 @@
+SOURCE_ID: nhs-breathing-exercises-for-stress
+SOURCE: NHS
+TITLE: Breathing exercises for stress
+URL: https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/breathing-exercises-for-stress/
+COLLECTION: support
+CATEGORY: grounding
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Slow breathing can be a useful grounding-style tool when stress or anxiety makes it hard to settle.
+
+A simple supportive approach is:
+- sit or stand in a comfortable position
+- let the breath move as deeply into the belly as feels comfortable
+- breathe in gently through the nose if comfortable
+- breathe out gently and steadily
+- continue for a few minutes without forcing the breath
+
+Breathing exercises should be presented as optional support tools rather than guaranteed fixes. The goal is to help someone slow down and reconnect with the present moment.
+
+If breathing exercises feel uncomfortable, it can help to pause and try another calming technique instead.

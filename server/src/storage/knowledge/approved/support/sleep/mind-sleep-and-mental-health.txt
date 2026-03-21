@@ -1,0 +1,25 @@
+SOURCE_ID: mind-sleep-and-mental-health
+SOURCE: Mind
+TITLE: Sleep and mental health
+URL: https://www.mind.org.uk/information-support/types-of-mental-health-problems/sleep-problems/sleep-and-mental-health/
+COLLECTION: support
+CATEGORY: sleep
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+Sleep and mental health are closely linked. Poor sleep can make mental health feel worse, and mental health difficulties can also make it harder to sleep well.
+
+People experiencing sleep problems may notice low energy, reduced concentration, irritability, or increased emotional strain. Worrying about sleep can also become part of the problem.
+
+Supportive sleep guidance may include:
+- building a steadier routine around going to bed and waking up
+- trying not to put too much pressure on yourself to sleep immediately
+- finding relaxing ways to wind down before bed
+- making the sleeping environment more comfortable where possible
+- keeping note of patterns if sleep difficulties continue
+- looking for support with connected issues such as stress or anxiety
+
+Different sleep strategies work for different people, and what helps can change over time. Sleep support content should remain practical and non-judgmental.
+
+If sleep problems are persistent, severe, or affecting safety and daily life, it may help to seek professional support.

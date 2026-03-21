@@ -1,0 +1,14 @@
+[
+  {
+    "id": "7zi1d3kbbmmm47p4l7",
+    "email": "test@example.com",
+    "passwordHash": "$2b$12$W8wzhj1zYbTBHp1bk.DJUeUB12WnCQtwSCt3GZb4LwhNWcWtdjfjC",
+    "createdAt": "2026-02-27T01:26:55.867Z"
+  },
+  {
+    "id": "yqg6e86ctromm48f7fx",
+    "email": "test2@example.com",
+    "passwordHash": "$2b$12$RCeH741r7rblFYWdYZOPk.P.pM0/rCnmQchWTGVXZKaR2C/18G//e",
+    "createdAt": "2026-02-27T01:47:12.621Z"
+  }
+]
