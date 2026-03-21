@@ -49,20 +49,47 @@ def embed_text(text: str) -> List[float]:
     return [v / norm for v in vec]
 
 
-@app.get("/health")
-def health():
+def get_client():
+    return chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+
+
+@app.get("/")
+def root():
     return {
         "status": "ok",
         "service": "rag-service",
-        "chroma_host": CHROMA_HOST,
-        "chroma_port": CHROMA_PORT,
+        "message": "ReflectAI RAG service is running",
     }
+
+
+@app.get("/health")
+def health():
+    try:
+        client = get_client()
+        support_collection = client.get_or_create_collection(name=SUPPORT_COLLECTION)
+        crisis_collection = client.get_or_create_collection(name=CRISIS_COLLECTION)
+
+        return {
+            "status": "ok",
+            "service": "rag-service",
+            "chroma_host": CHROMA_HOST,
+            "chroma_port": CHROMA_PORT,
+            "support_collection": SUPPORT_COLLECTION,
+            "crisis_collection": CRISIS_COLLECTION,
+            "support_count": support_collection.count(),
+            "crisis_count": crisis_collection.count(),
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not connect to Chroma at {CHROMA_HOST}:{CHROMA_PORT}: {str(e)}",
+        )
 
 
 @app.post("/retrieve")
 def retrieve(req: RetrieveRequest):
     try:
-        client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+        client = get_client()
         collection_name = CRISIS_COLLECTION if req.mode == "crisis" else SUPPORT_COLLECTION
         collection = client.get_or_create_collection(name=collection_name)
     except Exception as e:
@@ -102,7 +129,11 @@ def retrieve(req: RetrieveRequest):
                 }
             )
 
-        return {"results": items}
+        return {
+            "results": items,
+            "collection_used": collection_name,
+            "count": len(items),
+        }
     except Exception as e:
         raise HTTPException(
             status_code=500,
