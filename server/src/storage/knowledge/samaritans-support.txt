@@ -1,0 +1,21 @@
+SOURCE_ID: samaritans-contact-support
+SOURCE: Samaritans
+TITLE: Contact a Samaritan
+URL: https://www.samaritans.org/how-we-can-help/contact-samaritan/
+COLLECTION: support
+CATEGORY: urgent-help
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-19
+
+If someone in the UK wants emotional support or needs someone to talk to, Samaritans can be contacted free on 116 123.
+
+Samaritans are available day and night for people who need someone to listen. Their service offers emotional support and listening.
+
+Useful contact details:
+- call Samaritans on 116 123
+- email jo@samaritans.org
+- if there is immediate danger or a life-threatening emergency, call 999
+- if urgent help is needed but it is not an emergency, NHS 111 may help direct the person to the right service
+
+This support content is suitable for factual questions such as asking for the Samaritans number or how to contact Samaritans.
