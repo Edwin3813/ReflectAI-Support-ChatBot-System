@@ -73,9 +73,22 @@ function isSupportResourceQuery(message) {
     "call",
     "support line",
     "crisis line",
+    "116 123",
   ];
 
   return resourceTerms.some((term) => text.includes(term));
+}
+
+function buildQueryVariants(message, supportResourceQuery) {
+  if (!supportResourceQuery) return [message];
+
+  const base = String(message || "").trim();
+  return [
+    base,
+    `${base} support contact phone number helpline`,
+    "Samaritans 116 123 support contact UK",
+    "Samaritans phone number UK",
+  ];
 }
 
 function scoreResult(result, querySet) {
@@ -99,6 +112,33 @@ function scoreResult(result, querySet) {
   return overlap;
 }
 
+function isNamedResourceMatch(result, queryText) {
+  const q = String(queryText || "").toLowerCase();
+  const source = String(result?.source || "").toLowerCase();
+  const title = String(result?.title || "").toLowerCase();
+  const category = String(result?.category || "").toLowerCase();
+  const text = String(result?.text || "").toLowerCase();
+
+  if (q.includes("samaritans")) {
+    return (
+      source.includes("samaritans") ||
+      title.includes("samaritans") ||
+      text.includes("samaritans")
+    );
+  }
+
+  if (q.includes("helpline") || q.includes("phone number") || q.includes("contact") || q.includes("number")) {
+    return (
+      category.includes("support-resources") ||
+      text.includes("116 123") ||
+      source.includes("samaritans") ||
+      title.includes("samaritans")
+    );
+  }
+
+  return false;
+}
+
 function filterResultsByRelevance(results, message, options = {}) {
   const {
     maxDistance = 2.5,
@@ -107,7 +147,8 @@ function filterResultsByRelevance(results, message, options = {}) {
     allowCategoryBypass = false,
   } = options;
 
-  const queryTokens = tokenize(message);
+  const queryText = String(message || "");
+  const queryTokens = tokenize(queryText);
   const querySet = new Set(queryTokens);
 
   const filteredResults = (results || []).filter((r) => {
@@ -121,6 +162,10 @@ function filterResultsByRelevance(results, message, options = {}) {
       category.includes("support-resources") ||
       title.includes("samaritans") ||
       source.includes("samaritans");
+
+    if (isNamedResourceMatch(r, queryText)) {
+      return true;
+    }
 
     if (d > maxDistance && !(allowCategoryBypass && supportResourceLike)) {
       return false;
@@ -140,6 +185,10 @@ function filterResultsByRelevance(results, message, options = {}) {
   });
 
   filteredResults.sort((a, b) => {
+    const aDirect = isNamedResourceMatch(a, queryText) ? 1 : 0;
+    const bDirect = isNamedResourceMatch(b, queryText) ? 1 : 0;
+    if (bDirect !== aDirect) return bDirect - aDirect;
+
     const aOverlap = scoreResult(a, querySet);
     const bOverlap = scoreResult(b, querySet);
 
@@ -155,36 +204,42 @@ async function retrieveWithFallbackModes(req, message, safetyFlags) {
   const crisisLike = isCrisisLike(safetyFlags);
 
   const modePlan = crisisLike
-    ? [{ mode: "crisis", topK: 5 }]
+    ? [{ mode: "crisis", topK: 8, maxDistance: 5.0 }]
     : supportResourceQuery
     ? [
-        { mode: "support", topK: 8, maxDistance: 4.0, allowCategoryBypass: true },
-        { mode: "crisis", topK: 5, maxDistance: 4.0, allowCategoryBypass: true },
+        { mode: "support", topK: 25, maxDistance: 999, allowCategoryBypass: true },
+        { mode: "crisis", topK: 10, maxDistance: 999, allowCategoryBypass: true },
       ]
     : [{ mode: "support", topK: 5, maxDistance: 2.5 }];
+
+  const queryVariants = buildQueryVariants(message, supportResourceQuery);
 
   let finalResults = [];
   let retrievalModeUsed = modePlan[0].mode;
   let queryTokens = [];
 
-  for (const plan of modePlan) {
-    const data = await retrieveContext(req, message, plan.mode, plan.topK);
-    const results = data.results || [];
+  for (const variant of queryVariants) {
+    for (const plan of modePlan) {
+      const data = await retrieveContext(req, variant, plan.mode, plan.topK);
+      const results = data.results || [];
 
-    const { filteredResults, queryTokens: qTokens } = filterResultsByRelevance(results, message, {
-      maxDistance: plan.maxDistance ?? 2.5,
-      allowCategoryBypass: !!plan.allowCategoryBypass,
-    });
+      const { filteredResults, queryTokens: qTokens } = filterResultsByRelevance(results, message, {
+        maxDistance: plan.maxDistance ?? 2.5,
+        allowCategoryBypass: !!plan.allowCategoryBypass,
+      });
 
-    if (filteredResults.length > 0) {
-      finalResults = filteredResults;
+      if (filteredResults.length > 0) {
+        finalResults = filteredResults;
+        retrievalModeUsed = plan.mode;
+        queryTokens = qTokens;
+        break;
+      }
+
       retrievalModeUsed = plan.mode;
       queryTokens = qTokens;
-      break;
     }
 
-    retrievalModeUsed = plan.mode;
-    queryTokens = qTokens;
+    if (finalResults.length > 0) break;
   }
 
   return {
