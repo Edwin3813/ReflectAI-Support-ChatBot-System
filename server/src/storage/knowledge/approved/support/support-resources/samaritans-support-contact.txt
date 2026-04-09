@@ -1,0 +1,17 @@
+SOURCE_ID: samaritans_support_contact
+SOURCE: Samaritans
+TITLE: Samaritans support contact information
+URL: https://www.samaritans.org/
+COLLECTION: support
+CATEGORY: support-resources
+REGION: UK
+TRUST_LEVEL: high
+REVIEWED_AT: 2026-03-21
+
+Samaritans provides emotional support in the UK and Republic of Ireland.
+
+You can call Samaritans for free on 116 123, 24 hours a day.
+
+Their website is https://www.samaritans.org/.
+
+If someone is in immediate danger, call 999 in the UK.
