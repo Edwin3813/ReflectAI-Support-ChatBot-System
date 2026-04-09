@@ -15,14 +15,14 @@ const router = express.Router();
 
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || "http://127.0.0.1:8001";
 
-async function retrieveContext(req, query, mode = "support") {
+async function retrieveContext(req, query, mode = "support", topK = 5) {
   const res = await fetch(`${RAG_SERVICE_URL}/retrieve`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "x-request-id": req.requestId,
     },
-    body: JSON.stringify({ query, top_k: 3, mode }),
+    body: JSON.stringify({ query, top_k: topK, mode }),
   });
 
   if (!res.ok) {
@@ -44,7 +44,7 @@ const STOPWORDS = new Set([
   "the", "and", "for", "that", "with", "this", "from", "what", "which", "when", "where", "who",
   "why", "how", "is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "a", "an",
   "of", "to", "in", "on", "at", "by", "as", "it", "its", "i", "you", "your", "me", "my", "we", "our",
-  "can", "could", "should", "would", "will", "may", "might", "please", "tell"
+  "can", "could", "should", "would", "will", "may", "might", "please", "tell", "about", "some"
 ]);
 
 function tokenize(s) {
@@ -60,15 +60,51 @@ function isCrisisLike(flags) {
   return !!(flags?.crisis || flags?.suicidal || flags?.self_harm || flags?.urgent_help);
 }
 
-function isTrustedResult(result) {
-  const trust = String(result?.trust_level || "").toLowerCase();
-  return trust === "high" || trust === "medium";
+function isSupportResourceQuery(message) {
+  const text = String(message || "").toLowerCase();
+
+  const resourceTerms = [
+    "samaritans",
+    "helpline",
+    "hotline",
+    "phone number",
+    "number",
+    "contact",
+    "call",
+    "support line",
+    "crisis line",
+  ];
+
+  return resourceTerms.some((term) => text.includes(term));
+}
+
+function scoreResult(result, querySet) {
+  const text = String(result?.text || "");
+  const metaBits = [
+    result?.source,
+    result?.title,
+    result?.category,
+    result?.source_id,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const haystackTokens = new Set(tokenize(`${text} ${metaBits}`));
+
+  let overlap = 0;
+  for (const t of querySet) {
+    if (haystackTokens.has(t)) overlap += 1;
+  }
+
+  return overlap;
 }
 
 function filterResultsByRelevance(results, message, options = {}) {
   const {
     maxDistance = 2.5,
     allowAllIfNoQueryTokens = true,
+    minimumOverlap = 1,
+    allowCategoryBypass = false,
   } = options;
 
   const queryTokens = tokenize(message);
@@ -76,32 +112,87 @@ function filterResultsByRelevance(results, message, options = {}) {
 
   const filteredResults = (results || []).filter((r) => {
     const d = r.distance ?? 999;
-    if (d > maxDistance) return false;
-    if (!isTrustedResult(r)) return false;
+
+    const category = String(r?.category || "").toLowerCase();
+    const title = String(r?.title || "").toLowerCase();
+    const source = String(r?.source || "").toLowerCase();
+
+    const supportResourceLike =
+      category.includes("support-resources") ||
+      title.includes("samaritans") ||
+      source.includes("samaritans");
+
+    if (d > maxDistance && !(allowCategoryBypass && supportResourceLike)) {
+      return false;
+    }
 
     if (querySet.size === 0) return allowAllIfNoQueryTokens;
 
-    const docTokens = new Set(tokenize(r.text));
-    for (const t of querySet) {
-      if (docTokens.has(t)) return true;
+    const overlap = scoreResult(r, querySet);
+
+    if (overlap >= minimumOverlap) return true;
+
+    if (allowCategoryBypass && supportResourceLike && overlap >= 1) {
+      return true;
     }
+
     return false;
+  });
+
+  filteredResults.sort((a, b) => {
+    const aOverlap = scoreResult(a, querySet);
+    const bOverlap = scoreResult(b, querySet);
+
+    if (bOverlap !== aOverlap) return bOverlap - aOverlap;
+    return (a.distance ?? 999) - (b.distance ?? 999);
   });
 
   return { filteredResults, queryTokens };
 }
 
-function hasEnoughConfidence(filteredResults, retrievalMode) {
-  if (!filteredResults || filteredResults.length === 0) return false;
+async function retrieveWithFallbackModes(req, message, safetyFlags) {
+  const supportResourceQuery = isSupportResourceQuery(message);
+  const crisisLike = isCrisisLike(safetyFlags);
 
-  const maxDistance = retrievalMode === "crisis" ? 3.0 : 2.5;
-  const bestDistance = Math.min(...filteredResults.map((r) => r.distance ?? 999));
-  const trustedCount = filteredResults.filter(isTrustedResult).length;
+  const modePlan = crisisLike
+    ? [{ mode: "crisis", topK: 5 }]
+    : supportResourceQuery
+    ? [
+        { mode: "support", topK: 8, maxDistance: 4.0, allowCategoryBypass: true },
+        { mode: "crisis", topK: 5, maxDistance: 4.0, allowCategoryBypass: true },
+      ]
+    : [{ mode: "support", topK: 5, maxDistance: 2.5 }];
 
-  if (trustedCount === 0) return false;
-  if (bestDistance > maxDistance) return false;
+  let finalResults = [];
+  let retrievalModeUsed = modePlan[0].mode;
+  let queryTokens = [];
 
-  return true;
+  for (const plan of modePlan) {
+    const data = await retrieveContext(req, message, plan.mode, plan.topK);
+    const results = data.results || [];
+
+    const { filteredResults, queryTokens: qTokens } = filterResultsByRelevance(results, message, {
+      maxDistance: plan.maxDistance ?? 2.5,
+      allowCategoryBypass: !!plan.allowCategoryBypass,
+    });
+
+    if (filteredResults.length > 0) {
+      finalResults = filteredResults;
+      retrievalModeUsed = plan.mode;
+      queryTokens = qTokens;
+      break;
+    }
+
+    retrievalModeUsed = plan.mode;
+    queryTokens = qTokens;
+  }
+
+  return {
+    finalResults,
+    retrievalModeUsed,
+    queryTokens,
+    supportResourceQuery,
+  };
 }
 
 router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
@@ -169,84 +260,26 @@ router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
   }
 
   try {
-    const retrievalMode = isCrisisLike(safety.flags) ? "crisis" : "support";
-
-    const data = await retrieveContext(req, message, retrievalMode);
-    const results = data.results || [];
-
-    const bestDistance =
-      results.length > 0
-        ? Math.min(...results.map((r) => r.distance ?? 999))
-        : null;
-
-    logger.info(
-      {
-        event: "chat_retrieval_done",
-        request_id: requestId,
-        user_id: req.user?.userId,
-        retrieval_mode: retrievalMode,
-        retrieval_count: results.length,
-        retrieval_best_distance: bestDistance,
-      },
-      "Retrieval completed"
-    );
-
-    const { filteredResults, queryTokens } = filterResultsByRelevance(results, message, {
-      maxDistance: retrievalMode === "crisis" ? 3.0 : 2.5,
-    });
+    const { finalResults, retrievalModeUsed, queryTokens, supportResourceQuery } =
+      await retrieveWithFallbackModes(req, message, safety.flags);
 
     logger.info(
       {
         event: "chat_retrieval_filtered",
         request_id: requestId,
         user_id: req.user?.userId,
-        retrieval_mode: retrievalMode,
+        retrieval_mode: retrievalModeUsed,
+        support_resource_query: supportResourceQuery,
         query_tokens: queryTokens,
-        kept: filteredResults.length,
-        dropped: results.length - filteredResults.length,
+        kept: finalResults.length,
       },
       "Retrieval results filtered"
     );
 
-    if (!hasEnoughConfidence(filteredResults, retrievalMode)) {
-      const latency = Date.now() - start;
-
-      logger.info(
-        {
-          event: "chat_low_confidence_context",
-          request_id: requestId,
-          user_id: req.user?.userId,
-          retrieval_mode: retrievalMode,
-          latency_ms: latency,
-        },
-        "Retrieval confidence too low"
-      );
-
-      const meta = {
-        request_id: requestId,
-        blocked: false,
-        used_llm: false,
-        fallback: false,
-        reason: "low_confidence_context",
-        latency_ms: latency,
-      };
-
-      recordChat(meta);
-      insertChatMetricsEvent({ userId: req.user?.userId, meta });
-
-      return res.json({
-        answer:
-          "I couldn’t find reliable information in the knowledge base for that question yet.",
-        citations: [],
-        flags: safety.flags,
-        meta,
-      });
-    }
-
-    const pack = buildContextPack(filteredResults, {
-      topK: 3,
+    const pack = buildContextPack(finalResults, {
+      topK: supportResourceQuery ? 4 : 3,
       maxChunkChars: 650,
-      maxTotalChars: 1600,
+      maxTotalChars: supportResourceQuery ? 2200 : 1600,
     });
 
     if (!pack.context || pack.citations.length === 0) {
@@ -257,7 +290,7 @@ router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
           event: "chat_no_context",
           request_id: requestId,
           user_id: req.user?.userId,
-          retrieval_mode: retrievalMode,
+          retrieval_mode: retrievalModeUsed,
           latency_ms: latency,
         },
         "No relevant context"
@@ -291,7 +324,7 @@ router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
         event: "chat_llm_attempt",
         request_id: requestId,
         user_id: req.user?.userId,
-        retrieval_mode: retrievalMode,
+        retrieval_mode: retrievalModeUsed,
         allowed_citations: knownIds,
       },
       "Attempting LLM call"
@@ -397,7 +430,7 @@ router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
           event: "chat_success_llm",
           request_id: requestId,
           user_id: req.user?.userId,
-          retrieval_mode: retrievalMode,
+          retrieval_mode: retrievalModeUsed,
           latency_ms: latency,
         },
         "Chat completed using LLM"
