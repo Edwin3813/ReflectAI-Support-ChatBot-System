@@ -40,6 +40,57 @@ function postSafetyGate(answerText) {
   return { ok: !hit };
 }
 
+function getSupportResourceShortcut(message, requestId) {
+  const text = String(message || "").toLowerCase();
+
+  const isSamaritansQuery =
+    text.includes("samaritans") ||
+    text.includes("116 123") ||
+    text.includes("helpline") ||
+    text.includes("hotline") ||
+    text.includes("phone number") ||
+    text.includes("contact number") ||
+    text.includes("support line") ||
+    text.includes("crisis line");
+
+  if (!isSamaritansQuery) return null;
+
+  return {
+    answer:
+      "Samaritans provides emotional support in the UK and Republic of Ireland.\n\n" +
+      "You can call Samaritans for free on **116 123**, 24 hours a day.\n\n" +
+      "Website: https://www.samaritans.org/\n\n" +
+      "If someone is in immediate danger, call **999** in the UK.",
+    citations: [
+      {
+        ref: "S1",
+        source: "Samaritans",
+        source_id: "samaritans_support_contact",
+        title: "Samaritans support contact information",
+        url: "https://www.samaritans.org/",
+        collection: "support",
+        category: "support-resources",
+        trust_level: "high",
+        reviewed_at: "2026-03-21",
+        chunk: 0,
+      },
+    ],
+    flags: {
+      crisis: false,
+      refusal: false,
+      injection: false,
+    },
+    meta: {
+      request_id: requestId,
+      blocked: false,
+      used_llm: false,
+      fallback: true,
+      reason: "support_resource_shortcut",
+      latency_ms: 0,
+    },
+  };
+}
+
 const STOPWORDS = new Set([
   "the", "and", "for", "that", "with", "this", "from", "what", "which", "when", "where", "who",
   "why", "how", "is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "a", "an",
@@ -127,7 +178,12 @@ function isNamedResourceMatch(result, queryText) {
     );
   }
 
-  if (q.includes("helpline") || q.includes("phone number") || q.includes("contact") || q.includes("number")) {
+  if (
+    q.includes("helpline") ||
+    q.includes("phone number") ||
+    q.includes("contact") ||
+    q.includes("number")
+  ) {
     return (
       category.includes("support-resources") ||
       text.includes("116 123") ||
@@ -206,11 +262,11 @@ async function retrieveWithFallbackModes(req, message, safetyFlags) {
   const modePlan = crisisLike
     ? [{ mode: "crisis", topK: 8, maxDistance: 5.0 }]
     : supportResourceQuery
-    ? [
-        { mode: "support", topK: 25, maxDistance: 999, allowCategoryBypass: true },
-        { mode: "crisis", topK: 10, maxDistance: 999, allowCategoryBypass: true },
-      ]
-    : [{ mode: "support", topK: 5, maxDistance: 2.5 }];
+      ? [
+          { mode: "support", topK: 25, maxDistance: 999, allowCategoryBypass: true },
+          { mode: "crisis", topK: 10, maxDistance: 999, allowCategoryBypass: true },
+        ]
+      : [{ mode: "support", topK: 5, maxDistance: 2.5 }];
 
   const queryVariants = buildQueryVariants(message, supportResourceQuery);
 
@@ -312,6 +368,26 @@ router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
       flags: safety.flags,
       meta,
     });
+  }
+
+  const shortcut = getSupportResourceShortcut(message, requestId);
+  if (shortcut) {
+    shortcut.meta.latency_ms = Date.now() - start;
+
+    logger.info(
+      {
+        event: "chat_support_resource_shortcut",
+        request_id: requestId,
+        user_id: req.user?.userId,
+        latency_ms: shortcut.meta.latency_ms,
+      },
+      "Served support resource shortcut"
+    );
+
+    recordChat(shortcut.meta);
+    insertChatMetricsEvent({ userId: req.user?.userId, meta: shortcut.meta });
+
+    return res.json(shortcut);
   }
 
   try {
