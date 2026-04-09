@@ -126,6 +126,18 @@
       "url": "https://www.who.int/news-room/fact-sheets/detail/anxiety-disorders",
       "trust_level": "medium",
       "status": "approved"
+    },
+    {
+      "source_id": "samaritans-contact-support",
+     "domain": "samaritans.org",
+     "collection": "support",
+     "category": "urgent-help",
+     "region": "UK",
+     "title": "Contact a Samaritan",
+     "url": "https://www.samaritans.org/how-we-can-help/contact-samaritan/",
+     "trust_level": "high",
+     "status": "approved"
     }
+  
   ]
 }
