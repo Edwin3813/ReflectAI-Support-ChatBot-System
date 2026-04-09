@@ -313,46 +313,6 @@ router.post("/", requireAuth, chatUserLimiter, async (req, res) => {
   const { message } = req.body || {};
   if (!message) return res.status(400).json({ error: "message is required" });
 
-  const lowerMessage = String(message).toLowerCase();
-
-  if (lowerMessage.includes("samaritans")) {
-    return res.json({
-      answer:
-        "SAMARITANS TEST MARKER V3\n\n" +
-        "Call Samaritans free on 116 123 in the UK and ROI.\n\n" +
-        "Website: https://www.samaritans.org/\n\n" +
-        "If someone is in immediate danger, call 999 in the UK.",
-      citations: [
-        {
-          ref: "S1",
-          source: "Samaritans",
-          source_id: "samaritans_support_contact",
-          title: "Samaritans support contact information",
-          url: "https://www.samaritans.org/",
-          collection: "support",
-          category: "support-resources",
-          trust_level: "high",
-          reviewed_at: "2026-03-21",
-          chunk: 0,
-        },
-      ],
-      flags: {
-        crisis: false,
-        refusal: false,
-        injection: false,
-      },
-      meta: {
-        request_id: req.requestId,
-        blocked: false,
-        used_llm: false,
-        fallback: true,
-        reason: "hardcoded_samaritans_test_v3",
-        latency_ms: 1,
-      },
-    });
-  }
-
-
   logger.info(
     {
       event: "chat_request_start",
