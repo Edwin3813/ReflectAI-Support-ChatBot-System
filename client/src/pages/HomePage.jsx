@@ -212,7 +212,7 @@ export default function HomePage() {
             >
               R
             </div>
-            ReflectAI
+            ReflectAI-Support-ChatBot-System
           </Link>
 
           <nav
